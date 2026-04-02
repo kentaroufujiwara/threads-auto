@@ -1,0 +1,15 @@
+# 環境変数（トークン漏洩防止・絶対にコミットしない）
+.env
+
+# ログ
+logs/
+
+# 運用データ（個人の投稿履歴・公開不要）
+knowledge/post-history.md
+knowledge/post-queue.md
+knowledge/comment-history.md
+knowledge/next-topics.md
+knowledge/supervisor-report.md
+
+# macOS
+.DS_Store
