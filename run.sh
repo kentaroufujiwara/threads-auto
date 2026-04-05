@@ -14,6 +14,15 @@
 
 set -e
 
+# cronはHOMEが設定されないためclaude CLIの認証情報が読めない→明示的に設定
+export HOME=/Users/fujiwarakentarou
+
+# keychainからOAuthトークンを動的に取得してCLAUDE_CODE_OAUTH_TOKENに設定
+_KEYCHAIN_JSON=$(/usr/bin/security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null || echo "")
+if [ -n "$_KEYCHAIN_JSON" ]; then
+  export CLAUDE_CODE_OAUTH_TOKEN=$(echo "$_KEYCHAIN_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['claudeAiOauth']['accessToken'])" 2>/dev/null || echo "")
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 AGENTS_DIR="${SCRIPT_DIR}/agents"
 
@@ -36,11 +45,10 @@ run_agent() {
 
   # Claude Code (claude CLI) でエージェントを実行
   # --allowedTools でファイル読み書きとネットワークアクセスを許可
-  /Users/fujiwarakentarou/.local/bin/claude \
+  cat "${prompt_file}" | /Users/fujiwarakentarou/.local/bin/claude \
     --print \
     --allowedTools "Read,Write,Edit,Bash,WebFetch,WebSearch" \
-    --add-dir "${SCRIPT_DIR}" \
-    "$(cat "${prompt_file}")"
+    --add-dir "${SCRIPT_DIR}"
 
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "✅ ${agent} 完了"
